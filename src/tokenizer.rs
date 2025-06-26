@@ -57,25 +57,6 @@ impl Tokenizer for MorphologicalTokenizer {
     }
 }
 
-// 辞書ファイルが利用できない場合のフォールバック用
-pub struct FallbackTokenizer {
-    simple: SimpleTokenizer,
-}
-
-impl FallbackTokenizer {
-    pub fn new() -> Self {
-        Self {
-            simple: SimpleTokenizer,
-        }
-    }
-}
-
-impl Tokenizer for FallbackTokenizer {
-    fn tokenize(&self, text: &str) -> Vec<String> {
-        self.simple.tokenize(text)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,13 +120,6 @@ mod tests {
         // 空白で区切られた場合は分割される
         let tokens = tokenizer.tokenize("こんにちは 世界です");
         assert_eq!(tokens, vec!["こんにちは", "世界です"]);
-    }
-
-    #[test]
-    fn test_fallback_tokenizer() {
-        let tokenizer = FallbackTokenizer::new();
-        let tokens = tokenizer.tokenize("Hello こんにちは World 世界");
-        assert_eq!(tokens, vec!["hello", "こんにちは", "world", "世界"]);
     }
 
     #[test]
