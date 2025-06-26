@@ -1,4 +1,9 @@
-pub trait Tokenizer {
+use std::fs::File;
+use std::io::BufReader;
+use vibrato::{Dictionary, Tokenizer as VibratoTokenizer};
+use zstd::Decoder;
+
+pub trait Tokenizer: Send + Sync {
     fn tokenize(&self, text: &str) -> Vec<String>;
 }
 
@@ -10,6 +15,64 @@ impl Tokenizer for SimpleTokenizer {
             .map(|t| t.to_lowercase())
             .filter(|t| !t.is_empty())
             .collect()
+    }
+}
+
+pub struct MorphologicalTokenizer {
+    tokenizer: VibratoTokenizer,
+}
+
+impl MorphologicalTokenizer {
+    pub fn new(dict_path: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        let file = File::open(dict_path)?;
+        let reader = BufReader::new(file);
+        
+        // zstdで圧縮されたファイルかどうかを判定
+        let dict = if dict_path.ends_with(".zst") {
+            let decoder = Decoder::new(reader)?;
+            Dictionary::read(decoder)?
+        } else {
+            Dictionary::read(reader)?
+        };
+        
+        let tokenizer = VibratoTokenizer::new(dict);
+        Ok(Self { tokenizer })
+    }
+
+    pub fn new_with_dict(dict: Dictionary) -> Self {
+        let tokenizer = VibratoTokenizer::new(dict);
+        Self { tokenizer }
+    }
+}
+
+impl Tokenizer for MorphologicalTokenizer {
+    fn tokenize(&self, text: &str) -> Vec<String> {
+        let mut worker = self.tokenizer.new_worker();
+        worker.reset_sentence(text);
+        worker.tokenize();
+        
+        worker.token_iter()
+            .map(|token| token.surface().to_string())
+            .collect()
+    }
+}
+
+// 辞書ファイルが利用できない場合のフォールバック用
+pub struct FallbackTokenizer {
+    simple: SimpleTokenizer,
+}
+
+impl FallbackTokenizer {
+    pub fn new() -> Self {
+        Self {
+            simple: SimpleTokenizer,
+        }
+    }
+}
+
+impl Tokenizer for FallbackTokenizer {
+    fn tokenize(&self, text: &str) -> Vec<String> {
+        self.simple.tokenize(text)
     }
 }
 
@@ -76,5 +139,19 @@ mod tests {
         // 空白で区切られた場合は分割される
         let tokens = tokenizer.tokenize("こんにちは 世界です");
         assert_eq!(tokens, vec!["こんにちは", "世界です"]);
+    }
+
+    #[test]
+    fn test_fallback_tokenizer() {
+        let tokenizer = FallbackTokenizer::new();
+        let tokens = tokenizer.tokenize("Hello こんにちは World 世界");
+        assert_eq!(tokens, vec!["hello", "こんにちは", "world", "世界"]);
+    }
+
+    #[test]
+    fn test_morphological_tokenizer_creation() {
+        // 辞書ファイルが存在しない場合のエラーハンドリングをテスト
+        let result = MorphologicalTokenizer::new("nonexistent.dic");
+        assert!(result.is_err());
     }
 } 
