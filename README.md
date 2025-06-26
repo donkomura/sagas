@@ -18,8 +18,8 @@ Rustで実装されたシンプルで拡張可能な全文検索エンジンで�
 docker build -t sagas .
 
 # 実行
-docker run --rm sagas                    # 形態素解析の例
-docker run --rm sagas ./basic_usage      # 基本的な例
+docker run --rm sagas ./morphological_analysis  # 形態素解析の例
+docker run --rm sagas ./basic_usage             # 基本的な例
 ```
 
 ### ローカル
