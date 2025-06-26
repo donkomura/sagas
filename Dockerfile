@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# 辞書ファイルをダウンロードして展開
 RUN wget https://github.com/daac-tools/vibrato/releases/download/v0.5.0/ipadic-mecab-2_7_0.tar.xz \
     && tar xf ipadic-mecab-2_7_0.tar.xz \
     && rm ipadic-mecab-2_7_0.tar.xz
@@ -22,7 +23,6 @@ RUN mkdir src && echo "fn main() {}" > src/main.rs \
 COPY src ./src
 COPY examples ./examples
 
-RUN cargo build --release
 RUN cargo build --release --example morphological_analysis
 RUN cargo build --release --example basic_usage
 
@@ -36,10 +36,7 @@ WORKDIR /app
 
 COPY --from=builder /app/ipadic-mecab-2_7_0 ./ipadic-mecab-2_7_0
 
-COPY --from=builder /app/target/release/sagas ./
 COPY --from=builder /app/target/release/examples/morphological_analysis ./
 COPY --from=builder /app/target/release/examples/basic_usage ./
-
-ENV RUST_LOG=info
 
 CMD ["./morphological_analysis"] 
