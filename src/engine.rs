@@ -114,4 +114,52 @@ mod tests {
         
         assert_eq!(results, vec![1]);
     }
+
+    #[test]
+    fn test_japanese_search() {
+        let mut engine = SearchEngine::new(SimpleTokenizer, InvertedIndex::default());
+        let doc = Document::new(1, "こんにちは 世界".to_string());
+        
+        engine.add_document(doc);
+        let results = engine.search("こんにちは");
+        
+        assert_eq!(results, vec![1]);
+    }
+
+    #[test]
+    fn test_mixed_language_search() {
+        let mut engine = SearchEngine::new(SimpleTokenizer, InvertedIndex::default());
+        let doc1 = Document::new(1, "Hello こんにちは".to_string());
+        let doc2 = Document::new(2, "World 世界".to_string());
+        let doc3 = Document::new(3, "Hello World こんにちは 世界".to_string());
+        
+        engine.add_document(doc1);
+        engine.add_document(doc2);
+        engine.add_document(doc3);
+        
+        let results = engine.search("Hello こんにちは");
+        let mut expected = vec![1, 3];
+        expected.sort();
+        let mut actual = results;
+        actual.sort();
+        assert_eq!(actual, expected);
+        
+        let results = engine.search("世界");
+        let mut expected = vec![2, 3];
+        expected.sort();
+        let mut actual = results;
+        actual.sort();
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn test_unicode_characters_search() {
+        let mut engine = SearchEngine::new(SimpleTokenizer, InvertedIndex::default());
+        let doc = Document::new(1, "café résumé".to_string());
+        
+        engine.add_document(doc);
+        let results = engine.search("café");
+        
+        assert_eq!(results, vec![1]);
+    }
 } 
