@@ -12,11 +12,6 @@ fn main() {
         Document::new(3, "Rust book teaches systems programming".to_string()),
         Document::new(4, "JavaScript is a web programming language".to_string()),
         Document::new(5, "Rust and Python are both popular languages".to_string()),
-        Document::new(6, "Rustはシステムプログラミング言語です".to_string()),
-        Document::new(7, "Pythonは高級プログラミング言語です".to_string()),
-        Document::new(8, "JavaScriptはWebプログラミング言語です".to_string()),
-        Document::new(9, "RustとPythonは両方とも人気のある言語です".to_string()),
-        Document::new(10, "プログラミング language programming".to_string()),
     ];
     
     for doc in documents {
@@ -33,9 +28,6 @@ fn main() {
         "javascript",
         "nonexistent",
         "Rust",
-        "プログラミング",
-        "言語",
-        "システム",
         "language",
     ];
     

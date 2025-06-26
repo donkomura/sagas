@@ -1,27 +1,7 @@
 use sagas::engine::SearchEngine;
 use sagas::document::Document;
-use sagas::tokenizer::{MorphologicalTokenizer, FallbackTokenizer};
+use sagas::tokenizer::MorphologicalTokenizer;
 use sagas::index::InvertedIndex;
-
-fn run_with_morphological_tokenizer() {
-    println!("形態素解析トークナイザーを使用します");
-    let mut engine = SearchEngine::new(
-        MorphologicalTokenizer::new("ipadic-mecab-2_7_0/system.dic.zst").unwrap(),
-        InvertedIndex::default()
-    );
-    
-    run_search_example(&mut engine);
-}
-
-fn run_with_fallback_tokenizer() {
-    println!("辞書ファイルが見つからないため、フォールバックトークナイザーを使用します");
-    println!("形態素解析を試すには、vibratoの辞書ファイルをダウンロードしてください:");
-    println!("wget https://github.com/daac-tools/vibrato/releases/download/v0.5.2/ipadic-mecab-2_7_0.tar.xz");
-    println!("tar xf ipadic-mecab-2_7_0.tar.xz");
-    
-    let mut engine = SearchEngine::new(FallbackTokenizer::new(), InvertedIndex::default());
-    run_search_example(&mut engine);
-}
 
 fn run_search_example<T: sagas::tokenizer::Tokenizer>(engine: &mut SearchEngine<T, InvertedIndex>) {
     let documents = vec![
@@ -40,9 +20,6 @@ fn run_search_example<T: sagas::tokenizer::Tokenizer>(engine: &mut SearchEngine<
     for doc in documents {
         engine.add_document(doc);
     }
-    
-    println!("検索エンジンにドキュメントを追加しました");
-    println!();
     
     let queries = vec![
         "プログラミング",
@@ -70,18 +47,13 @@ fn run_search_example<T: sagas::tokenizer::Tokenizer>(engine: &mut SearchEngine<
             println!("検索語 '{}': ドキュメントID {:?}", query, results);
         }
     }
-    
-    println!();
-    println!("形態素解析の効果:");
-    println!("- 日本語の文章が適切に単語に分割される");
-    println!("- 助詞や接続詞が除外され、重要な名詞や動詞が抽出される");
-    println!("- より正確な検索結果が得られる");
 }
 
 fn main() {
-    // 形態素解析トークナイザーを試す（辞書ファイルが利用できない場合はフォールバック）
-    match MorphologicalTokenizer::new("ipadic-mecab-2_7_0/system.dic.zst") {
-        Ok(_) => run_with_morphological_tokenizer(),
-        Err(_) => run_with_fallback_tokenizer(),
-    }
+    let mut engine = SearchEngine::new(
+        MorphologicalTokenizer::new("ipadic-mecab-2_7_0/system.dic.zst").unwrap(),
+        InvertedIndex::default()
+    );
+    
+    run_search_example(&mut engine);
 } 
