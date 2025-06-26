@@ -7,31 +7,31 @@ Rustで実装されたシンプルで拡張可能な全文検索エンジンで�
 - ドキュメントの追加とインデックス化
 - 複数語によるAND検索
 - 大文字小文字を区別しない検索
-- 拡張可能なアーキテクチャ
+- 日本語形態素解析対応（vibrato使用）
 
 ## 使用方法
 
-```rust
-use sagas::engine::SearchEngine;
-use sagas::document::Document;
-use sagas::tokenizer::SimpleTokenizer;
-use sagas::index::InvertedIndex;
-
-fn main() {
-    let mut engine = SearchEngine::new(SimpleTokenizer, InvertedIndex::default());
-    
-    engine.add_document(Document::new(1, "Rust programming".to_string()));
-    engine.add_document(Document::new(2, "Python programming".to_string()));
-    
-    let results = engine.search("rust"); // [1]
-    println!("{:?}", results);
-}
-```
-
-## 実行例
+### Docker（推奨）
 
 ```bash
+# ビルド
+docker build -t sagas .
+
+# 実行
+docker run --rm sagas ./morphological_analysis  # 形態素解析の例
+docker run --rm sagas ./basic_usage             # 基本的な例
+```
+
+### ローカル
+
+```bash
+# 辞書ファイルのダウンロード
+wget https://github.com/daac-tools/vibrato/releases/download/v0.5.0/ipadic-mecab-2_7_0.tar.xz
+tar xf ipadic-mecab-2_7_0.tar.xz
+
+# 実行
 cargo run --example basic_usage
+cargo run --example morphological_analysis
 ```
 
 ## テスト

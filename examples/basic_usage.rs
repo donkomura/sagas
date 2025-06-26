@@ -27,6 +27,8 @@ fn main() {
         "python",
         "javascript",
         "nonexistent",
+        "Rust",
+        "language",
     ];
     
     for query in queries {
